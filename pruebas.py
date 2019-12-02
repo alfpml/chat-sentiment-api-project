@@ -1,7 +1,6 @@
 from pymongo import MongoClient
 import getpass
 import json
-import mongofnc as mf
 
 #Get Password
 password = getpass.getpass("Insert your AtlasMongoDB admin_1019 password: ")
