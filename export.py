@@ -4,7 +4,7 @@ import json
 
 #Get Password
 password = getpass.getpass("Insert your AtlasMongoDB admin_1019 password: ")
-connection = 'mongodb+srv://admin_1019:{}@datamad1019-enj5c.mongodb.net/test?retryWrites=true&w=majority'.format(password)
+connection = "mongodb+srv://alfpml:{}@cluster0-c3fib.mongodb.net/test?retryWrites=true&w=majority".format(password)
 
 #Connect to DB
 client = MongoClient(connection)
@@ -13,7 +13,7 @@ def connectCollection(database, collection):
     coll = db[collection]
     return db, coll
 
-db, coll = connectCollection('datamad1019','chats')
+db, coll = connectCollection('apichats','chat1')
 
 query = {'idChat':0}
 test_query = coll.find(query)
