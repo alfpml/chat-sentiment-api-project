@@ -8,46 +8,67 @@ import mongofnc as mf
 @route("/")
 def index():
     """To get all the data from the DB"""
-    return dumps(coll.find())
+    return {'This is the chat sentiment api'}
 
 @get("/<chat_id>/messages")
 def getMessages(chat_id):
     """Get messages from a given chat"""
     return dumps(coll.find({'idChat':int(chat_id)}))
-    
 
 @get("/users")
 def getUsers():
     """Get all users"""
     return dumps(coll.aggregate([{"$group":{"_id": {"idUser":"$idUser", "userName":"$userName"}}}]))
 
+@get("/<userid>/usermessages")
+def getUserMessages(userid):
+    """Gets user messages"""
+    return dumps(coll.find({'idUser':int(userid)},{"text": 1,"_id":0}))
+
+
 @post('/user/create')
 def createuser():
     """New user creation"""
     name = str(request.forms.get("name"))
-    new_id = coll.distinct("idUser")[-1] + 1
+    new_id = max(user.distinct("idUser")) + 1
+    names = list(user.aggregate([{'$project':{'userName':1}}]))
 
-        "idUser":new_id,
-        "userName":name
-    }
-    coll.insert_one(new_user)
+    if name in [n['userName'] for n in names]:
+        return "name already in database"
+    else:
+        new_user = {
+            "idUser": new_id,
+            "userName": name
+        }
+        user.insert_one(new_user)
+        return f"user_id for {name} is {new_id}"
 
 @post('/chat/<chat_id>/addmessage')
-def createMessage(chat_id):
-    db1, coll1 = mc.connectCollection('apiproject','chats')
-    user = dumps(coll1.find({"idChat":int(chat_id)},{"idUser":1,"userName":1}))
-    
+def addMessage(chat_id):
+    """Add messages for a given chat"""
+    idUser = max(user.distinct('idUser')) +1
+    names = list(user.aggregate([{'$project':{'userName':1, 'idUser':1,'_id':0}}]))
+    name = str(request.forms.get("name"))
     message = str(request.forms.get("message"))
-    new_id = coll.distinct("idMessage")[-1] + 1
+    new_id = max(coll.distinct("idMessage"))+ 1
+    for n in names:
+        if n['userName']==name:
+            idUser = n['idUser']
     new_message = {
         "idUser":idUser,
-        "userName": username,
+        "userName": name,
         "idChat": int(chat_id),
         "idMessage":new_id,
         "text" : message
     }
+    new_user = {
+        "idUser":idUser,
+        "userName":name
+    }
+    if name not in [n['userName'] for n in names]:
+        user.insert_one(new_user)
     coll.insert_one(new_message)
 
-
 db, coll = mf.connectCollection('apichats', 'chat1')
+db, user = mf.connectCollection('apichats', 'users')
 run(host="0.0.0.0", port=8080, debug=True)
