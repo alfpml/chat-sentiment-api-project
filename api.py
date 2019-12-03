@@ -20,10 +20,10 @@ def getUsers():
     """Get all users"""
     return dumps(coll.aggregate([{"$group":{"_id": {"idUser":"$idUser", "userName":"$userName"}}}]))
 
-@get("/<userid>/usermessages")
-def getUserMessages(userid):
+@get("/<username>/usermessages")
+def getUserMessages(username):
     """Gets user messages"""
-    return dumps(coll.find({'idUser':int(userid)},{"text": 1,"_id":0}))
+    return dumps(coll.find({'userName':str(username)},{"text": 1,"_id":0}))
 
 
 @post('/user/create')
